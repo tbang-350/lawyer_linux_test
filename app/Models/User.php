@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'firm_id',
     ];
 
     /**
@@ -38,11 +40,40 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    public function firm()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Firm::class);
+    }
+
+    public function lawyerProfile()
+    {
+        return $this->hasOne(LawyerProfile::class);
+    }
+
+    public function appointments()
+    {
+        return $this->belongsToMany(Appointment::class, 'appointment_lawyer')
+            ->withPivot('notification_preferences')
+            ->withTimestamps();
+    }
+
+    public function notificationSettings()
+    {
+        return $this->hasOne(NotificationSetting::class);
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isLawyer()
+    {
+        return $this->role === 'lawyer';
     }
 }
